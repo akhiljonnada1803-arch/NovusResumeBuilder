@@ -1,6 +1,29 @@
 import { Resume, ATSScoreBreakdown } from "@/types/resume";
 import { DEFAULT_DESIGN } from "./constants";
 
+/**
+ * MOCK DATA — Demo & Development Only
+ *
+ * SAMPLE_RESUMES provides realistic placeholder data for:
+ *   - Unauthenticated demo mode (novus_demo_auth cookie)
+ *   - Public portfolio preview routes (/p/sample-resume-*)
+ *   - Template gallery previews
+ *   - Local development without Supabase
+ *
+ * In production with real auth, the Zustand store and API routes
+ * use live Supabase data and never fall through to these samples.
+ *
+ * If you see this data appearing for a real authenticated user,
+ * it means Supabase is returning no rows — check RLS policies and migrations.
+ */
+if (process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === "password123") {
+  console.error(
+    "❌ [Novus] CRITICAL: NEXT_PUBLIC_SUPABASE_ANON_KEY is still set to the placeholder value 'password123'. " +
+    "Real users will see mock data instead of their own resumes. " +
+    "Fix: Copy the anon key from Supabase Dashboard → Project Settings → API."
+  );
+}
+
 export const SAMPLE_RESUMES: Resume[] = [
   {
     id: "sample-resume-1",

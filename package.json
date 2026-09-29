@@ -1,12 +1,17 @@
 {
   "name": "novus-app",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "migrate": "node scripts/migrate.js",
+    "migrate:check": "node scripts/migrate.js --check",
     "tauri": "node scripts/tauri-runner.js",
     "tauri:dev": "node scripts/tauri-runner.js dev",
     "tauri:build": "node scripts/tauri-runner.js build",
@@ -37,7 +42,6 @@
     "mammoth": "^1.12.2",
     "next": "16.3.3",
     "next-themes": "^0.4.6",
-    "openai": "^7.8.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-hook-form": "^7.86.0",
@@ -53,9 +57,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }
