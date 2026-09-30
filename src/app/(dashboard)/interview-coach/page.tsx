@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VoiceInterviewStudio } from "@/components/voice-interview/VoiceInterviewStudio";
 import { RealInterviewRoom } from "@/modules/interview";
+import { QuestionBankStudio } from "@/components/interview/QuestionBankStudio";
 import {
   InterviewCategory,
   InterviewQuestion,
@@ -40,8 +41,6 @@ import {
   CheckCircle2,
   Zap,
   BookOpen,
-  Copy,
-  Check,
   ArrowRight,
   ArrowLeft,
   RotateCcw,
@@ -63,8 +62,6 @@ export default function InterviewCoachPage() {
 
   const [activeTab, setActiveTab] = useState<InterviewMode>("hub");
   const [targetRole, setTargetRole] = useState(currentResume?.personalInfo?.jobTitle || "Senior Software Engineer");
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<InterviewCategory | "all">("all");
-  const [copiedQuestionId, setCopiedQuestionId] = useState<string | null>(null);
 
   // Question Bank State
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
@@ -256,12 +253,6 @@ export default function InterviewCoachPage() {
     }
   };
 
-  const handleCopyQuestion = (id: string, text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedQuestionId(id);
-    setTimeout(() => setCopiedQuestionId(null), 2000);
-  };
-
   // Dynamic 4D Readiness Calculation from conversational turns
   const calculateDynamicReadiness = () => {
     const scoredTurns = chatTurns.filter((t) => t.speaker === "recruiter" && t.evaluationSnippet?.score);
@@ -327,11 +318,6 @@ export default function InterviewCoachPage() {
   const readinessReport = calculateDynamicReadiness();
   const currentPersona = RECRUITER_PERSONAS[chatPersonaId] || RECRUITER_PERSONAS["tech-lead"];
   const currentStageInfo = INTERVIEW_STAGES.find((s) => s.id === chatStage) || INTERVIEW_STAGES[0];
-
-  const filteredQuestions =
-    selectedCategoryFilter === "all"
-      ? questions
-      : questions.filter((q) => q.category === selectedCategoryFilter);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-20 px-2 sm:px-4">
@@ -455,7 +441,7 @@ export default function InterviewCoachPage() {
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5 text-amber-500" />
-                <span>Bank</span>
+                <span>Bank ({questions.length})</span>
               </button>
             </div>
           </div>
@@ -689,7 +675,7 @@ export default function InterviewCoachPage() {
                     <BookOpen className="w-6 h-6" />
                   </div>
                   <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                    Tailored Repository
+                    Redesigned Studio ({questions.length} Qs)
                   </span>
                 </div>
 
@@ -698,28 +684,28 @@ export default function InterviewCoachPage() {
                     Targeted Question Bank
                   </h3>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    Browse custom-generated questions extracted from your resume experience and target job title with interviewer intent and talking points.
+                    Explore multi-category questions with interviewer intents, pitfalls to avoid, STAR model answers, interactive flashcards, and cheat sheet export.
                   </p>
                 </div>
 
                 <div className="space-y-1.5 pt-2 border-t border-border/60 text-xs">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Filter by HR, Technical, Project, and Behavioral</span>
+                    <span>Technical, System Design, STAR, Leadership & HR</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Interviewer intent notes and recommended talking points</span>
+                    <span>Interactive Flashcard mode & self-practice scoring</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>One-click copy to clipboard for offline practice</span>
+                    <span>One-click Markdown cheat sheet export</span>
                   </div>
                 </div>
               </div>
 
               <div className="pt-6 flex items-center justify-between text-xs font-bold text-amber-600 dark:text-amber-400">
-                <span>Explore Questions</span>
+                <span>Explore Question Studio</span>
                 <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center group-hover:translate-x-1 transition-transform">
                   <ArrowRight className="w-4 h-4" />
                 </div>
@@ -751,8 +737,25 @@ export default function InterviewCoachPage() {
         </div>
       )}
 
-      {/* Mode C: Conversational Chat Simulator & Question Bank Studio */}
-      {activeTab !== "hub" && activeTab !== "voice" && activeTab !== "video" && (
+      {/* Mode C: Question Bank Studio (Full Width Redesigned Experience) */}
+      {activeTab === "bank" && (
+        <div className="animate-in fade-in duration-200">
+          <QuestionBankStudio
+            resume={currentResume}
+            targetRole={targetRole}
+            questions={questions}
+            isLoading={isLoadingQuestions}
+            onRegenerate={loadQuestions}
+            onSelectForPractice={() => {
+              setActiveTab("mock");
+              if (chatTurns.length === 0) startChatSession();
+            }}
+          />
+        </div>
+      )}
+
+      {/* Mode D: Conversational Chat Simulator */}
+      {activeTab === "mock" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-200">
           {/* Left Column: Context & Real-Time Performance (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
@@ -794,26 +797,24 @@ export default function InterviewCoachPage() {
               </div>
 
               {/* Persona Selector for Chat Simulator */}
-              {activeTab === "mock" && (
-                <div className="space-y-1.5 pt-2 border-t border-border/60">
-                  <Label className="text-xs font-semibold text-foreground/80">Interviewer Persona</Label>
-                  <select
-                    value={chatPersonaId}
-                    onChange={(e) => {
-                      const newPersona = e.target.value as RecruiterPersonaId;
-                      setChatPersonaId(newPersona);
-                      startChatSession(newPersona);
-                    }}
-                    className="w-full h-9 px-3 rounded-xl border border-border bg-secondary/30 text-xs text-foreground font-medium focus:outline-hidden focus:ring-1 focus:ring-primary transition-all"
-                  >
-                    {Object.values(RECRUITER_PERSONAS).map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({p.title})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div className="space-y-1.5 pt-2 border-t border-border/60">
+                <Label className="text-xs font-semibold text-foreground/80">Interviewer Persona</Label>
+                <select
+                  value={chatPersonaId}
+                  onChange={(e) => {
+                    const newPersona = e.target.value as RecruiterPersonaId;
+                    setChatPersonaId(newPersona);
+                    startChatSession(newPersona);
+                  }}
+                  className="w-full h-9 px-3 rounded-xl border border-border bg-secondary/30 text-xs text-foreground font-medium focus:outline-hidden focus:ring-1 focus:ring-primary transition-all"
+                >
+                  {Object.values(RECRUITER_PERSONAS).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.title})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Real-time 4D Score Card */}
@@ -918,7 +919,7 @@ export default function InterviewCoachPage() {
                 </div>
               </div>
 
-              {/* Recruiter Live Notes (if any recorded during interview) */}
+              {/* Recruiter Live Notes */}
               {chatRecruiterNotes.length > 0 && (
                 <div className="pt-2 border-t border-border/60 space-y-1.5">
                   <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold block">
@@ -948,263 +949,160 @@ export default function InterviewCoachPage() {
 
           {/* Right Column: Conversational AI Simulator View (8 cols) */}
           <div className="lg:col-span-8 space-y-3">
-            {activeTab === "mock" ? (
-              <div className="rounded-3xl border border-border/80 bg-card shadow-sm flex flex-col h-[740px] overflow-hidden backdrop-blur-sm">
-                {/* Chat Header Status Bar */}
-                <div className="p-4 border-b border-border/80 bg-secondary/40 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-ping absolute top-0 left-0 opacity-75" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block relative" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-foreground">{currentPersona.name}</span>
-                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${currentPersona.badgeClass}`}>
-                          {currentPersona.title}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground">
-                        {currentPersona.company} &bull; {currentPersona.toneDescription}
-                      </p>
-                    </div>
+            <div className="rounded-3xl border border-border/80 bg-card shadow-sm flex flex-col h-[740px] overflow-hidden backdrop-blur-sm">
+              {/* Chat Header Status Bar */}
+              <div className="p-4 border-b border-border/80 bg-secondary/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-ping absolute top-0 left-0 opacity-75" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block relative" />
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-card border border-border text-foreground">
-                      {currentStageInfo.shortLabel}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => startChatSession()}
-                      disabled={isChatEvaluating}
-                      className="h-7 px-2.5 text-[11px] font-bold rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground gap-1"
-                      title="Restart Interview Session"
-                    >
-                      <RotateCcw className="w-3 h-3" />
-                      <span>Restart</span>
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Conversational Turns Stream */}
-                <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-5">
-                  {chatTurns.map((turn) => {
-                    const isRecruiter = turn.speaker === "recruiter";
-                    return (
-                      <div
-                        key={turn.id}
-                        className={`flex gap-3 text-xs leading-relaxed animate-in fade-in duration-300 ${
-                          isRecruiter ? "items-start" : "items-start flex-row-reverse"
-                        }`}
-                      >
-                        {/* Avatar */}
-                        <div
-                          className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                            isRecruiter
-                              ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border border-border"
-                              : "bg-primary text-primary-foreground"
-                          }`}
-                        >
-                          {isRecruiter ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
-                        </div>
-
-                        {/* Bubble & Insights Container */}
-                        <div className="space-y-2.5 max-w-[85%] sm:max-w-[80%]">
-                          {/* Recruiter Header info */}
-                          {isRecruiter && (
-                            <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                              <span className="font-bold text-foreground">{currentPersona.name}</span>
-                              {turn.recruiterReaction && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/80 text-[10px] text-muted-foreground border border-border/60">
-                                  <span>{turn.recruiterEmotionEmoji || "💬"}</span>
-                                  <span>{turn.recruiterReaction}</span>
-                                </span>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Message Text Bubble */}
-                          <div
-                            className={`p-4 rounded-2xl shadow-2xs ${
-                              isRecruiter
-                                ? "bg-secondary/70 border border-border/80 text-foreground rounded-tl-xs whitespace-pre-line leading-relaxed font-sans"
-                                : "bg-primary text-primary-foreground rounded-tr-xs leading-relaxed"
-                            }`}
-                          >
-                            {turn.text}
-                          </div>
-
-                          {/* Live Evaluation Snippet (on recruiter follow-up turns) */}
-                          {turn.evaluationSnippet && (
-                            <div className="p-3.5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 text-foreground space-y-1.5 shadow-2xs animate-in fade-in duration-200">
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                                  <Sparkle className="w-3.5 h-3.5" />
-                                  Turn Assessment
-                                </span>
-                                {turn.evaluationSnippet.score > 0 && (
-                                  <span className="font-mono font-bold text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
-                                    Score: {turn.evaluationSnippet.score}/100
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                {turn.evaluationSnippet.feedback}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* Typing / Evaluating Indicator */}
-                  {isChatEvaluating && (
-                    <div className="flex items-center gap-2.5 text-xs text-muted-foreground p-3.5 rounded-2xl bg-secondary/50 border border-border/80 w-fit animate-pulse">
-                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                      <span>{currentPersona.name} is evaluating your technical depth & formulating follow-ups...</span>
-                    </div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Chat Input Bar */}
-                <div className="p-3.5 border-t border-border/80 bg-card space-y-2">
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleSendChatTurn();
-                    }}
-                    className="flex items-center gap-2.5"
-                  >
-                    <Input
-                      value={chatCandidateInput}
-                      onChange={(e) => setChatCandidateInput(e.target.value)}
-                      placeholder={`Reply to ${currentPersona.name} (discuss architectures, trade-offs, metrics)...`}
-                      className="h-11 text-xs bg-secondary/30 rounded-xl focus-visible:ring-1"
-                      disabled={isChatEvaluating}
-                    />
-
-                    <Button
-                      type="submit"
-                      variant="radiant"
-                      size="sm"
-                      className="h-11 px-5 font-bold text-xs gap-2 rounded-xl shadow-xs shrink-0 cursor-pointer"
-                      disabled={!chatCandidateInput.trim() || isChatEvaluating}
-                    >
-                      <span>Send</span>
-                      <Send className="w-3.5 h-3.5" />
-                    </Button>
-                  </form>
-                  <p className="text-[10px] text-muted-foreground text-center">
-                    Tip: Press <kbd className="font-mono bg-secondary px-1 py-0.5 rounded-md border text-[9px]">Enter</kbd> to submit. Proactively cite trade-offs, architecture decisions, and metrics.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              /* Tab: Question Bank Explorer */
-              <div className="p-6 rounded-3xl border border-border/80 bg-card shadow-sm space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-5">
                   <div>
-                    <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                      <BookOpen className="w-5 h-5 text-primary" />
-                      Tailored Question Bank
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                      Browse custom-generated interview questions customized for {targetRole}.
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold text-foreground">{currentPersona.name}</span>
+                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${currentPersona.badgeClass}`}>
+                        {currentPersona.title}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      {currentPersona.company} &bull; {currentPersona.toneDescription}
                     </p>
                   </div>
-
-                  {/* Category filter pills */}
-                  <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-secondary/40 border border-border/60">
-                    {(["all", "hr", "technical", "project", "behavioral"] as const).map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setSelectedCategoryFilter(cat)}
-                        className={`text-xs px-3 py-1.5 rounded-lg font-semibold capitalize transition-all ${
-                          selectedCategoryFilter === cat
-                            ? "bg-card text-foreground border border-border shadow-xs scale-[1.02]"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
-                <div className="space-y-4">
-                  {filteredQuestions.length === 0 ? (
-                    <div className="p-8 text-center rounded-2xl border border-dashed border-border/80 text-muted-foreground text-xs">
-                      No questions found in this category. Click &ldquo;Regenerate Qs&rdquo; to reload.
-                    </div>
-                  ) : (
-                    filteredQuestions.map((q, idx) => (
-                      <div
-                        key={q.id}
-                        className="group p-5 rounded-2xl border border-border/80 bg-secondary/15 hover:bg-secondary/30 transition-all space-y-3 hover:border-primary/30"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-secondary text-foreground border border-border">
-                              {q.category}
-                            </span>
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                              {q.difficulty}
-                            </span>
-                          </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-card border border-border text-foreground">
+                    {currentStageInfo.shortLabel}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => startChatSession()}
+                    disabled={isChatEvaluating}
+                    className="h-7 px-2.5 text-[11px] font-bold rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground gap-1"
+                    title="Restart Interview Session"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Restart</span>
+                  </Button>
+                </div>
+              </div>
 
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground font-mono">#{idx + 1}</span>
-                            <button
-                              onClick={() => handleCopyQuestion(q.id, q.question)}
-                              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card border border-transparent hover:border-border transition-all"
-                              title="Copy Question"
-                            >
-                              {copiedQuestionId === q.id ? (
-                                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                              )}
-                            </button>
+              {/* Conversational Turns Stream */}
+              <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-5">
+                {chatTurns.map((turn) => {
+                  const isRecruiter = turn.speaker === "recruiter";
+                  return (
+                    <div
+                      key={turn.id}
+                      className={`flex gap-3 text-xs leading-relaxed animate-in fade-in duration-300 ${
+                        isRecruiter ? "items-start" : "items-start flex-row-reverse"
+                      }`}
+                    >
+                      {/* Avatar */}
+                      <div
+                        className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
+                          isRecruiter
+                            ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border border-border"
+                            : "bg-primary text-primary-foreground"
+                        }`}
+                      >
+                        {isRecruiter ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                      </div>
+
+                      {/* Bubble & Insights Container */}
+                      <div className="space-y-2.5 max-w-[85%] sm:max-w-[80%]">
+                        {/* Recruiter Header info */}
+                        {isRecruiter && (
+                          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                            <span className="font-bold text-foreground">{currentPersona.name}</span>
+                            {turn.recruiterReaction && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/80 text-[10px] text-muted-foreground border border-border/60">
+                                <span>{turn.recruiterEmotionEmoji || "💬"}</span>
+                                <span>{turn.recruiterReaction}</span>
+                              </span>
+                            )}
                           </div>
+                        )}
+
+                        {/* Message Text Bubble */}
+                        <div
+                          className={`p-4 rounded-2xl shadow-2xs ${
+                            isRecruiter
+                              ? "bg-secondary/70 border border-border/80 text-foreground rounded-tl-xs whitespace-pre-line leading-relaxed font-sans"
+                              : "bg-primary text-primary-foreground rounded-tr-xs leading-relaxed"
+                          }`}
+                        >
+                          {turn.text}
                         </div>
 
-                        <h3 className="font-bold text-sm text-foreground leading-snug">
-                          {q.question}
-                        </h3>
-
-                        <p className="text-xs text-muted-foreground">
-                          <span className="font-bold text-foreground">Interviewer Intent: </span>
-                          {q.intent}
-                        </p>
-
-                        {q.suggestedPoints && q.suggestedPoints.length > 0 && (
-                          <div className="pt-2.5 border-t border-border/60">
-                            <span className="text-[11px] font-bold text-muted-foreground block mb-1.5">
-                              Recommended Talking Points:
-                            </span>
-                            <div className="flex flex-wrap gap-1.5">
-                              {q.suggestedPoints.map((pt, i) => (
-                                <span
-                                  key={i}
-                                  className="text-[10px] px-2.5 py-1 rounded-lg bg-card border border-border text-foreground font-mono"
-                                >
-                                  {pt}
+                        {/* Live Evaluation Snippet */}
+                        {turn.evaluationSnippet && (
+                          <div className="p-3.5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 text-foreground space-y-1.5 shadow-2xs animate-in fade-in duration-200">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                                <Sparkle className="w-3.5 h-3.5" />
+                                Turn Assessment
+                              </span>
+                              {turn.evaluationSnippet.score > 0 && (
+                                <span className="font-mono font-bold text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                                  Score: {turn.evaluationSnippet.score}/100
                                 </span>
-                              ))}
+                              )}
                             </div>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                              {turn.evaluationSnippet.feedback}
+                            </p>
                           </div>
                         )}
                       </div>
-                    ))
-                  )}
-                </div>
+                    </div>
+                  );
+                })}
+
+                {/* Typing / Evaluating Indicator */}
+                {isChatEvaluating && (
+                  <div className="flex items-center gap-2.5 text-xs text-muted-foreground p-3.5 rounded-2xl bg-secondary/50 border border-border/80 w-fit animate-pulse">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span>{currentPersona.name} is evaluating your technical depth & formulating follow-ups...</span>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
-            )}
+
+              {/* Chat Input Bar */}
+              <div className="p-3.5 border-t border-border/80 bg-card space-y-2">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSendChatTurn();
+                  }}
+                  className="flex items-center gap-2.5"
+                >
+                  <Input
+                    value={chatCandidateInput}
+                    onChange={(e) => setChatCandidateInput(e.target.value)}
+                    placeholder={`Reply to ${currentPersona.name} (discuss architectures, trade-offs, metrics)...`}
+                    className="h-11 text-xs bg-secondary/30 rounded-xl focus-visible:ring-1"
+                    disabled={isChatEvaluating}
+                  />
+
+                  <Button
+                    type="submit"
+                    variant="radiant"
+                    size="sm"
+                    className="h-11 px-5 font-bold text-xs gap-2 rounded-xl shadow-xs shrink-0 cursor-pointer"
+                    disabled={!chatCandidateInput.trim() || isChatEvaluating}
+                  >
+                    <span>Send</span>
+                    <Send className="w-3.5 h-3.5" />
+                  </Button>
+                </form>
+                <p className="text-[10px] text-muted-foreground text-center">
+                  Tip: Press <kbd className="font-mono bg-secondary px-1 py-0.5 rounded-md border text-[9px]">Enter</kbd> to submit. Proactively cite trade-offs, architecture decisions, and metrics.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}

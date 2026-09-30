@@ -104,7 +104,13 @@ export interface MultiSourceContext {
   jobDescription?: string;
 }
 
-export type InterviewCategory = "hr" | "technical" | "project" | "behavioral";
+export type InterviewCategory =
+  | "hr"
+  | "technical"
+  | "project"
+  | "behavioral"
+  | "system-design"
+  | "leadership";
 
 export interface InterviewQuestion {
   id: string;
@@ -114,6 +120,10 @@ export interface InterviewQuestion {
   suggestedPoints: string[];
   difficulty: "Junior" | "Mid" | "Senior" | "Lead" | "Staff";
   codeSnippet?: string;
+  companyTags?: string[];
+  commonPitfalls?: string[];
+  modelAnswer?: string;
+  estimatedTime?: string;
 }
 
 export interface InterviewMessage {
