@@ -143,28 +143,6 @@ body {
     print-color-adjust: exact !important;
   }
 
-  body * {
-    visibility: hidden;
-  }
-
-  #resume-preview-document,
-  #resume-preview-document * {
-    visibility: visible;
-  }
-
-  #resume-preview-document {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 210mm !important;
-    min-height: 297mm !important;
-    margin: 0 !important;
-    padding: 20mm !important;
-    box-shadow: none !important;
-    border: none !important;
-    transform: none !important;
-  }
-
   /* Prevent awkward page break cuts inside sections */
   .resume-section-item,
   .resume-section-header,

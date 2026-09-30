@@ -56,6 +56,8 @@ export const DEFAULT_DESIGN: ResumeDesignSettings = {
   fontFamily: "Inter",
   fontSize: "base",
   spacing: "normal",
+  margins: "normal",
+  customMarginMm: 20,
   showIcons: true,
   showSectionDividers: true,
 };

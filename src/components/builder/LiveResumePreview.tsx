@@ -2,7 +2,8 @@
 
 import React, { useRef, useState } from "react";
 import { useResumeStore } from "@/store/useResumeStore";
-import { exportResumeToPDF } from "@/lib/pdf-export";
+import { exportResumeToPDF, printResumeViaIframe } from "@/lib/pdf-export";
+import { exportResumeToDocx } from "@/lib/docx-export";
 import confetti from "canvas-confetti";
 import {
   ZoomIn,
@@ -12,6 +13,7 @@ import {
   Globe,
   Loader2,
   Palette,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PortfolioShareModal } from "@/components/portfolio/PortfolioShareModal";
@@ -28,6 +30,7 @@ export function LiveResumePreview() {
   const printRef = useRef<HTMLDivElement>(null);
 
   const [isExporting, setIsExporting] = useState(false);
+  const [exportType, setExportType] = useState<"pdf" | "docx" | "">("");
   const [exportStatus, setExportStatus] = useState<string>("");
   const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
 
@@ -39,7 +42,11 @@ export function LiveResumePreview() {
     RESUME_TEMPLATES.find((t) => t.id === template) || RESUME_TEMPLATES[0];
 
   const handlePrint = () => {
-    window.print();
+    if (printRef.current) {
+      printResumeViaIframe(printRef.current);
+    } else {
+      window.print();
+    }
   };
 
   const handleDownloadPDF = async () => {
@@ -47,6 +54,7 @@ export function LiveResumePreview() {
 
     try {
       setIsExporting(true);
+      setExportType("pdf");
       const cleanName = personalInfo?.fullName
         ? personalInfo.fullName.toLowerCase().replace(/[^a-z0-9]/g, "-")
         : "resume";
@@ -63,10 +71,43 @@ export function LiveResumePreview() {
         origin: { y: 0.8 },
       });
     } catch (err) {
-      console.warn("PDF Export fallback to browser print dialog:", err);
-      window.print();
+      console.warn("PDF Export fallback to print dialog:", err);
+      if (printRef.current) {
+        printResumeViaIframe(printRef.current);
+      }
     } finally {
       setIsExporting(false);
+      setExportType("");
+      setExportStatus("");
+    }
+  };
+
+  const handleDownloadDocx = async () => {
+    if (isExporting) return;
+
+    try {
+      setIsExporting(true);
+      setExportType("docx");
+      const cleanName = personalInfo?.fullName
+        ? personalInfo.fullName.toLowerCase().replace(/[^a-z0-9]/g, "-")
+        : "resume";
+
+      await exportResumeToDocx(activeResume, {
+        filename: `${cleanName}-resume.docx`,
+        onProgress: (status: string) => setExportStatus(status),
+      });
+
+      // Celebration Confetti
+      confetti({
+        particleCount: 50,
+        spread: 50,
+        origin: { y: 0.8 },
+      });
+    } catch (err) {
+      console.error("Word (.docx) export failed:", err);
+    } finally {
+      setIsExporting(false);
+      setExportType("");
       setExportStatus("");
     }
   };
@@ -84,12 +125,20 @@ export function LiveResumePreview() {
     }
   };
 
+  const getMarginPadding = () => {
+    const m = design?.margins || "normal";
+    if (m === "compact") return "12mm";
+    if (m === "spacious") return "28mm";
+    if (m === "custom") return `${design?.customMarginMm || 20}mm`;
+    return "20mm";
+  };
+
   const currentZoom = zoomLevel <= 2 ? Math.round(zoomLevel * 100) : zoomLevel;
 
   return (
     <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden relative shadow-2xs">
       {/* Top Preview Toolbar */}
-      <div className="flex items-center justify-between p-2.5 border-b border-border bg-card z-10">
+      <div className="flex items-center justify-between p-2.5 border-b border-border bg-card z-10 flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-foreground">Live Document</span>
           <Link
@@ -102,7 +151,7 @@ export function LiveResumePreview() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           {/* Zoom Stepper */}
           <div className="flex items-center gap-1 bg-secondary/80 px-1.5 py-0.5 rounded-lg border border-border/80 text-xs">
             <button
@@ -143,12 +192,35 @@ export function LiveResumePreview() {
             variant="outline"
             className="h-7 text-xs px-2 gap-1"
             onClick={handlePrint}
-            title="Print or Save as PDF"
+            title="Print or Save via Browser"
           >
             <Printer className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Print</span>
           </Button>
 
+          {/* Download Word (.docx) */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs px-2.5 gap-1.5 border-border hover:bg-secondary font-medium"
+            onClick={handleDownloadDocx}
+            disabled={isExporting}
+            title="Download editable Microsoft Word document (.docx)"
+          >
+            {isExporting && exportType === "docx" ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span className="hidden sm:inline">{exportStatus || "Word..."}</span>
+              </>
+            ) : (
+              <>
+                <FileText className="w-3.5 h-3.5 text-blue-500" />
+                <span>Word (.docx)</span>
+              </>
+            )}
+          </Button>
+
+          {/* Download PDF */}
           <Button
             size="sm"
             variant="radiant"
@@ -156,7 +228,7 @@ export function LiveResumePreview() {
             onClick={handleDownloadPDF}
             disabled={isExporting}
           >
-            {isExporting ? (
+            {isExporting && exportType === "pdf" ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 <span className="hidden sm:inline">{exportStatus || "Exporting..."}</span>
@@ -180,11 +252,14 @@ export function LiveResumePreview() {
             transformOrigin: "top center",
           }}
         >
-          {/* Printable A4 Paper Shell */}
+          {/* Printable A4 Paper Shell with dynamic user-configured margins */}
           <div
             ref={printRef}
             id="resume-preview-document"
-            className={`w-[210mm] min-h-[297mm] bg-white text-black p-[20mm] shadow-lg rounded-xs overflow-hidden transition-all duration-200 border border-slate-200 ${getFontFamilyStyle()}`}
+            className={`w-[210mm] min-h-[297mm] bg-white text-black shadow-lg rounded-xs overflow-hidden transition-all duration-200 border border-slate-200 ${getFontFamilyStyle()}`}
+            style={{
+              padding: getMarginPadding(),
+            }}
           >
             <TemplateRenderer data={activeResume} templateId={template} />
           </div>

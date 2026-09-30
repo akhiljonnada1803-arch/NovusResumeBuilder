@@ -20,6 +20,7 @@ import {
   Clock,
   ArrowRight,
   Zap,
+  Sliders,
 } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/shared/icons";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,48 @@ interface RoadmapItem {
 }
 
 const ROADMAP_ITEMS: RoadmapItem[] = [
-  // v1.1 — Released / Live Now
+  // v1.0 — Foundation
+  {
+    icon: FileText,
+    title: "AI Resume Builder (26+ Templates)",
+    description:
+      "Full resume builder with 26 ATS-optimized, creative, and premium templates. Live preview with zoom, real-time edits, font, accent & section controls.",
+    version: "v1.0",
+    status: "live",
+    statusLabel: "Live in v1.0",
+    href: "/dashboard",
+    accent: "from-slate-500/15 via-zinc-500/5 to-transparent border-slate-500/30",
+    iconColor: "text-slate-300",
+    badgeColor: "bg-slate-500/10 text-slate-300 border-slate-500/30",
+  },
+  {
+    icon: ShieldCheck,
+    title: "ATS Scanner & Keyword Optimizer",
+    description:
+      "Real-time ATS score with section-by-section breakdown, keyword gap analysis, and actionable suggestions to pass automated screening filters.",
+    version: "v1.0",
+    status: "live",
+    statusLabel: "Live in v1.0",
+    href: "/ats-analyzer",
+    accent: "from-emerald-500/15 via-teal-500/5 to-transparent border-emerald-500/30",
+    iconColor: "text-emerald-400",
+    badgeColor: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
+  },
+  {
+    icon: Globe,
+    title: "Portfolio Website Generator (10 Themes)",
+    description:
+      "Auto-generated live portfolio site from resume data with 10 themes, custom domain support, and one-click publish.",
+    version: "v1.0",
+    status: "live",
+    statusLabel: "Live in v1.0",
+    href: "/portfolio",
+    accent: "from-sky-500/15 via-blue-500/5 to-transparent border-sky-500/30",
+    iconColor: "text-sky-400",
+    badgeColor: "bg-sky-500/10 text-sky-300 border-sky-500/30",
+  },
+
+  // v1.1 — Released
   {
     icon: Mic,
     title: "Voice Interview Coach",
@@ -89,6 +131,34 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
     accent: "from-emerald-500/15 via-teal-500/5 to-transparent border-emerald-500/30",
     iconColor: "text-emerald-400",
     badgeColor: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
+  },
+
+  // v1.1.1 — Hotfix / Enhancement
+  {
+    icon: Zap,
+    title: "PDF Export Engine Fix & Word (.docx) Export",
+    description:
+      "Completely rebuilt the PDF export pipeline using html2canvas — fixing blank white pages, zoom-distorted PDFs, and corrupted desktop downloads. Added Microsoft Word (.docx) export with full formatting, section structure, and margin controls.",
+    version: "v1.1.1",
+    status: "live",
+    statusLabel: "Live in v1.1.1",
+    href: "/dashboard",
+    accent: "from-rose-500/15 via-pink-500/5 to-transparent border-rose-500/30",
+    iconColor: "text-rose-400",
+    badgeColor: "bg-rose-500/10 text-rose-300 border-rose-500/30",
+  },
+  {
+    icon: Sliders,
+    title: "Page Margins & Spacing Studio",
+    description:
+      "Granular control over resume page margins (compact 12mm → spacious 28mm), custom slider, line spacing density, and base font size — all reflected live in the PDF & Word exports.",
+    version: "v1.1.1",
+    status: "live",
+    statusLabel: "Live in v1.1.1",
+    href: "/dashboard",
+    accent: "from-teal-500/15 via-cyan-500/5 to-transparent border-teal-500/30",
+    iconColor: "text-teal-400",
+    badgeColor: "bg-teal-500/10 text-teal-300 border-teal-500/30",
   },
 
   // v1.2 — In Progress
@@ -185,7 +255,7 @@ export default function DiscoverPage() {
           {(
             [
               { id: "all", label: "All Items" },
-              { id: "live", label: "🎉 Live in v1.1" },
+              { id: "live", label: "🎉 Live (v1.0 – v1.1.1)" },
               { id: "in-progress", label: "⚡ In Progress (v1.2)" },
               { id: "planned", label: "🔭 Future (v2.0 / v3.0)" },
             ] as const
@@ -265,10 +335,10 @@ export default function DiscoverPage() {
       <div className="rounded-xl border border-border/60 bg-secondary/30 p-6 text-center space-y-3">
         <div className="flex items-center justify-center gap-2 text-sm font-semibold text-foreground">
           <Sparkles className="w-4 h-4 text-primary" />
-          Core Platform Foundation (v1.0 &amp; v1.1)
+          Core Platform Foundation (v1.0 → v1.1.1)
         </div>
         <p className="text-xs text-muted-foreground max-w-lg mx-auto leading-relaxed">
-          Interactive ATS resume builder, 26+ templates, PDF compiler, portfolio website generator with 10 themes, AI bullet optimizer, cover letter engine, BYOK key manager, and live interview studios are fully live.
+          Interactive ATS resume builder, 26+ templates, PDF & Word export, page margin controls, portfolio website generator with 10 themes, AI bullet optimizer, cover letter engine, BYOK key manager, live interview studios, and global command palette are fully live.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
           {[
@@ -278,6 +348,8 @@ export default function DiscoverPage() {
             { icon: Bot, label: "AI Interview Coach" },
             { icon: Key, label: "BYOK Privacy Manager" },
             { icon: Command, label: "Command Palette (⌘K)" },
+            { icon: Zap, label: "PDF & Word (.docx) Export" },
+            { icon: Sliders, label: "Page Margins Studio" },
           ].map(({ icon: I, label }) => (
             <span
               key={label}

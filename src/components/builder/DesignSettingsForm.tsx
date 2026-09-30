@@ -330,6 +330,122 @@ export function DesignSettingsForm() {
         </div>
       </div>
 
+      {/* Margins & Page Padding */}
+      <div className="space-y-3 pt-2 border-t border-border/60">
+        <div className="flex items-center justify-between">
+          <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <Sliders className="w-3.5 h-3.5 text-foreground" />
+            Page Margins & Spacing
+          </Label>
+          <span className="text-[11px] font-mono text-muted-foreground">
+            {design.margins === "compact"
+              ? "12mm (Compact)"
+              : design.margins === "spacious"
+              ? "28mm (Spacious)"
+              : design.margins === "custom"
+              ? `${design.customMarginMm || 20}mm (Custom)`
+              : "20mm (Standard)"}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-4 gap-1.5">
+          {[
+            { id: "compact", label: "Compact", mm: "12mm" },
+            { id: "normal", label: "Standard", mm: "20mm" },
+            { id: "spacious", label: "Spacious", mm: "28mm" },
+            { id: "custom", label: "Custom", mm: `${design.customMarginMm || 20}mm` },
+          ].map((m) => {
+            const isSelected = (design.margins || "normal") === m.id;
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => updateDesign({ margins: m.id as any })}
+                className={`py-2 px-1 rounded-lg border text-center transition-all ${
+                  isSelected
+                    ? "border-primary bg-secondary font-semibold text-foreground shadow-2xs"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <div className="text-[11px] font-semibold leading-none">{m.label}</div>
+                <div className="text-[9px] text-muted-foreground mt-1">{m.mm}</div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Custom Margin Slider */}
+        {design.margins === "custom" && (
+          <div className="p-3 bg-secondary/40 rounded-lg border border-border/80 space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Adjust Page Margin:</span>
+              <span className="font-semibold text-foreground font-mono">{design.customMarginMm || 20} mm</span>
+            </div>
+            <input
+              type="range"
+              min="8"
+              max="35"
+              step="1"
+              value={design.customMarginMm || 20}
+              onChange={(e) => updateDesign({ customMarginMm: Number(e.target.value) })}
+              className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground">
+              <span>8mm (Tight)</span>
+              <span>20mm (Standard)</span>
+              <span>35mm (Wide)</span>
+            </div>
+          </div>
+        )}
+
+        {/* Section Spacing & Density */}
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <div>
+            <Label className="text-[11px] text-muted-foreground mb-1 block">Line Spacing</Label>
+            <div className="grid grid-cols-3 gap-1">
+              {(["compact", "normal", "spacious"] as const).map((sp) => (
+                <button
+                  key={sp}
+                  type="button"
+                  onClick={() => updateDesign({ spacing: sp })}
+                  className={`py-1 text-[11px] font-medium capitalize rounded-md border transition-colors ${
+                    (design.spacing || "normal") === sp
+                      ? "border-primary bg-secondary font-semibold text-foreground"
+                      : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {sp}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-[11px] text-muted-foreground mb-1 block">Base Font Size</Label>
+            <div className="grid grid-cols-3 gap-1">
+              {[
+                { id: "sm", label: "Small" },
+                { id: "base", label: "Normal" },
+                { id: "lg", label: "Large" },
+              ].map((fs) => (
+                <button
+                  key={fs.id}
+                  type="button"
+                  onClick={() => updateDesign({ fontSize: fs.id as any })}
+                  className={`py-1 text-[11px] font-medium rounded-md border transition-colors ${
+                    (design.fontSize || "base") === fs.id
+                      ? "border-primary bg-secondary font-semibold text-foreground"
+                      : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {fs.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Photo Crop Modal Trigger */}
       <ProfilePhotoModal
         open={isPhotoModalOpen}

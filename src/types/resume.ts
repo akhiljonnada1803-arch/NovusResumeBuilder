@@ -149,6 +149,8 @@ export interface ResumeDesignSettings {
   fontFamily: ResumeFontFamily;
   fontSize: "sm" | "base" | "lg";
   spacing: "compact" | "normal" | "spacious";
+  margins?: "compact" | "normal" | "spacious" | "custom";
+  customMarginMm?: number;
   showIcons: boolean;
   showSectionDividers: boolean;
   // Photo styling preferences

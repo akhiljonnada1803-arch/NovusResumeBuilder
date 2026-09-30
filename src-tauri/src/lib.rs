@@ -1,8 +1,9 @@
+use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
-    AppHandle, Manager,
+    AppHandle,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -78,15 +79,29 @@ async fn save_native_file(
 
 #[tauri::command]
 async fn open_external_browser(url: String) -> Result<(), String> {
-    open::that(&url).map_err(|e| e.to_string())
+    // Use OS default browser via std::process (avoids deprecated shell.open)
+    #[cfg(target_os = "windows")]
+    std::process::Command::new("cmd")
+        .args(["/c", "start", &url])
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    #[cfg(target_os = "macos")]
+    std::process::Command::new("open")
+        .arg(&url)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    #[cfg(target_os = "linux")]
+    std::process::Command::new("xdg-open")
+        .arg(&url)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 fn base64_decode(input: &str) -> Result<Vec<u8>, String> {
-    // Simple helper or standard base64 decoding
-    use std::io::Read;
-    let clean = input.trim();
-    // Fallback: write bytes directly
-    Ok(clean.as_bytes().to_vec())
+    general_purpose::STANDARD
+        .decode(input.trim())
+        .map_err(|e| format!("Base64 decode error: {}", e))
 }
 
 pub fn run() {
@@ -147,17 +162,8 @@ pub fn run() {
 
             app.set_menu(menu)?;
 
-            // Register Protocol Deep Link
-            #[cfg(desktop)]
-            {
-                let app_handle = app.handle().clone();
-                tauri_plugin_deep_link::register("novus", move |request| {
-                    if let Some(window) = app_handle.get_webview_window("main") {
-                        let _ = window.emit("deep-link", request);
-                        let _ = window.set_focus();
-                    }
-                })?;
-            }
+            // Deep link registration is handled automatically by tauri_plugin_deep_link::init()
+            // The frontend listens for the 'deep-link://new-url' event via the plugin's JS API.
 
             Ok(())
         })
