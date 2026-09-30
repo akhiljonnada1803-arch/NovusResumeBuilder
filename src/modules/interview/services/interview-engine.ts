@@ -1,4 +1,4 @@
-﻿import { IS_VALID_API_KEY, getGeminiModel } from "@/lib/gemini/client";
+import { IS_VALID_API_KEY, getGeminiModel } from "@/lib/gemini/client";
 import { RecruiterPersonaId, RECRUITER_PERSONAS } from "../types/persona";
 import {
   InterviewStage,
@@ -110,7 +110,7 @@ export async function processConversationTurn(
         concernLevel: 10,
         technicalImpression: "Solid",
       },
-      suggestedNextStage: "project-deep-dive",
+      suggestedNextStage: "resume-walkthrough",
       instantScore: null,
       instantFeedback: `${persona.name} initiated session tailored to ${candidateName}'s background.`,
       recruiterLiveNote: `Candidate connected with ${persona.name}. Primary evaluation focus: ${persona.scoringFocus.primaryMetric}.`,

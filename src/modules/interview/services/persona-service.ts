@@ -174,7 +174,7 @@ export function generateDynamicGroundedFallback(
     activeEmotion,
     emotionEmoji,
     suggestedNextStage: stage,
-    instantScore: candidateAnswer.length > 30 ? 88 : 60,
+    instantScore: null,
     instantFeedback: `Evaluated technical reasoning and implementation trade-offs for ${realProject}.`,
     recruiterLiveNote: `Noted candidate explanation regarding ${realSkills} on ${realProject}.`,
   };

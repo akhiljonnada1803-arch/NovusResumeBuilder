@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { SUPPORTED_PLATFORMS } from "@/lib/integrations/registry";
 import { GitHubImportModal } from "@/components/integrations/GitHubImportModal";
 import { LinkedInImportModal } from "@/components/integrations/LinkedInImportModal";
+import { ByokKeyManager } from "@/components/settings/ByokKeyManager";
+import { FEATURES } from "@/lib/features";
 import { GithubIcon, LinkedinIcon } from "@/components/shared/icons";
 import {
   User,
@@ -29,12 +31,13 @@ import {
   Sparkles,
   ExternalLink,
   Zap,
+  Key,
 } from "lucide-react";
 
 export default function SettingsPage() {
   const { profile, updateUserProfile, updateUserPassword, signOut } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"account" | "integrations">("account");
+  const [activeTab, setActiveTab] = useState<"account" | "integrations" | "api-keys">("account");
   const [fullName, setFullName] = useState(profile?.fullName || "");
   const [jobTitle, setJobTitle] = useState(profile?.jobTitle || "");
   const [password, setPassword] = useState("");
@@ -174,10 +177,37 @@ export default function SettingsPage() {
             <Zap className="w-3.5 h-3.5 text-amber-500" />
             Integrations Hub ({SUPPORTED_PLATFORMS.length})
           </button>
+
+          {FEATURES.byokKeyManager && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("api-keys")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                activeTab === "api-keys"
+                  ? "bg-secondary text-foreground border border-border shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Key className="w-3.5 h-3.5 text-blue-400" />
+              API Keys &amp; Privacy
+            </button>
+          )}
         </div>
       </div>
 
-      {activeTab === "account" ? (
+      {activeTab === "api-keys" ? (
+        <div className="max-w-xl">
+          <div className="p-6 rounded-xl border border-border bg-card shadow-2xs">
+            <div className="flex items-center gap-2 pb-4 mb-4 border-b border-border">
+              <Key className="w-4 h-4 text-blue-400" />
+              <h2 className="text-sm font-semibold text-foreground">
+                API Keys &amp; Privacy (BYOK)
+              </h2>
+            </div>
+            <ByokKeyManager />
+          </div>
+        </div>
+      ) : activeTab === "account" ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Profile Card */}
           <div className="md:col-span-2 space-y-6">

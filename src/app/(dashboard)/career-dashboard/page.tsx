@@ -243,6 +243,17 @@ export default function CareerDashboardPage() {
       {/* ========================================================================= */}
       {activeDashboardTab === "analytics" && (
         <div className="space-y-6 animate-in fade-in duration-200">
+          {/* ⚠️ Demo Data Disclaimer */}
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-500/8 text-amber-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <div className="text-xs space-y-0.5">
+              <p className="font-semibold text-amber-200">Illustrative demo data</p>
+              <p className="text-amber-400/80">
+                These analytics are generated locally from your resume content — not from real tracking. Real portfolio visitor counts, recruiter clicks, and GitHub metrics require connecting live data sources (coming in v1.2).
+              </p>
+            </div>
+          </div>
+
           {/* Top 4 KPI Metric Cards */}
           <AnalyticsKpiGrid summary={analyticsSummary} />
 

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { GithubIcon, LinkedinIcon } from "@/components/shared/icons";
@@ -24,6 +24,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CommandPalette } from "@/components/shared/CommandPalette";
 
 import { FEATURES } from "@/lib/features";
 
@@ -33,13 +34,8 @@ const DASHBOARD_LINKS = [
   { href: "/linkedin", label: "LinkedIn Sync", icon: LinkedinIcon },
   { href: "/github", label: "GitHub Hub", icon: GithubIcon },
   { href: "/career-dashboard", label: "Career Intel", icon: Compass },
+  // Voice & Video Interview tabs live inside Interview Coach — no separate sidebar entries
   { href: "/interview-coach", label: "Interview Coach", icon: Bot },
-  ...(FEATURES.voiceInterview
-    ? [{ href: "/voice-interview", label: "Voice Interview", icon: Bot }]
-    : []),
-  ...(FEATURES.videoInterview
-    ? [{ href: "/video-interview", label: "Video Interview", icon: Bot }]
-    : []),
   { href: "/portfolio", label: "Portfolio Site", icon: Globe },
   { href: "/cover-letters", label: "Cover Letters", icon: FileText },
   { href: "/ats-analyzer", label: "ATS Scanner", icon: ShieldCheck },
@@ -50,8 +46,33 @@ const DASHBOARD_LINKS = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { profile, signOut } = useAuth();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+
+  const openPalette = useCallback(() => setIsPaletteOpen(true), []);
+  const closePalette = useCallback(() => setIsPaletteOpen(false), []);
+
+  const handlePaletteNavigate = useCallback(
+    (href: string) => {
+      closePalette();
+      router.push(href);
+    },
+    [closePalette, router]
+  );
+
+  // Global Cmd+K / Ctrl+K shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const initials = profile?.fullName
     ? profile.fullName
@@ -103,9 +124,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
           </div>
 
-          {/* Quick Search Bar Placeholder */}
+          {/* Command Palette Trigger */}
           <div className="px-1">
-            <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/60 border border-border/60 text-xs text-muted-foreground">
+            <button
+              onClick={openPalette}
+              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/60 border border-border/60 text-xs text-muted-foreground hover:bg-secondary hover:border-border transition-colors cursor-pointer"
+              aria-label="Open command palette"
+            >
               <div className="flex items-center gap-2">
                 <Search className="w-3.5 h-3.5" />
                 <span className="text-[11px]">Quick find...</span>
@@ -113,7 +138,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <kbd className="text-[10px] font-mono bg-card px-1.5 py-0.5 rounded border border-border/80">
                 ⌘K
               </kbd>
-            </div>
+            </button>
           </div>
 
           {/* Navigation Links */}
@@ -243,6 +268,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+
+      {/* Command Palette — rendered at root so it overlays everything */}
+      {FEATURES.cmdPalette && (
+        <CommandPalette
+          isOpen={isPaletteOpen}
+          onClose={closePalette}
+          onNavigate={handlePaletteNavigate}
+          links={DASHBOARD_LINKS}
+        />
+      )}
     </div>
   );
 }
