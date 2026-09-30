@@ -2,12 +2,15 @@ import { describe, it, expect } from "vitest";
 import { FEATURES } from "@/lib/features";
 
 describe("Feature Flags", () => {
-  it("all v1.1+ flags are off by default (no env vars set)", () => {
-    // In the test environment none of the NEXT_PUBLIC_FEATURE_* vars are set
-    // so all flags should be false
-    expect(FEATURES.voiceInterview).toBe(false);
-    expect(FEATURES.videoInterview).toBe(false);
-    expect(FEATURES.interviewHistory).toBe(false);
+  it("v1.1 flags are enabled by default and v1.2+ flags are off by default", () => {
+    // In v1.1, interview & BYOK features are active out of the box
+    expect(FEATURES.voiceInterview).toBe(true);
+    expect(FEATURES.videoInterview).toBe(true);
+    expect(FEATURES.interviewHistory).toBe(true);
+    expect(FEATURES.byokKeyManager).toBe(true);
+    expect(FEATURES.cmdPalette).toBe(true);
+
+    // v1.2+ future roadmap features are off by default
     expect(FEATURES.linkedinLiveSync).toBe(false);
     expect(FEATURES.githubWebhook).toBe(false);
     expect(FEATURES.emailReports).toBe(false);
