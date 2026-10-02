@@ -1,9 +1,8 @@
 import React from "react";
-import { TemplateProps, ContactList, SectionTitle } from "../common/TemplateSections";
+import { TemplateProps, ContactList } from "../common/TemplateSections";
 
 export function TechMinimal({ data, className = "" }: TemplateProps) {
-  const { personalInfo, experience, education, projects, skills, certifications, achievements, design } = data;
-  const accentColor = design?.accentColor || "#09090b"; // Clean Tech Minimal Mono
+  const { personalInfo, experience, education, projects, skills } = data;
 
   return (
     <div className={`p-8 sm:p-12 text-slate-900 bg-white leading-relaxed font-mono text-xs ${className}`}>
@@ -19,7 +18,7 @@ export function TechMinimal({ data, className = "" }: TemplateProps) {
       {/* Summary */}
       {personalInfo.summary && (
         <section className="mb-5">
-          <p className="text-slate-500 font-bold mb-1">// Bio</p>
+          <p className="text-slate-500 font-bold mb-1">{"// Bio"}</p>
           <p className="text-slate-800 leading-normal">{personalInfo.summary}</p>
         </section>
       )}
@@ -27,7 +26,7 @@ export function TechMinimal({ data, className = "" }: TemplateProps) {
       {/* Skills */}
       {skills.length > 0 && (
         <section className="mb-5">
-          <p className="text-slate-500 font-bold mb-1">// Stack</p>
+          <p className="text-slate-500 font-bold mb-1">{"// Stack"}</p>
           <p className="text-slate-800 font-semibold">{skills.map((s) => s.name).join(" • ")}</p>
         </section>
       )}
@@ -35,7 +34,7 @@ export function TechMinimal({ data, className = "" }: TemplateProps) {
       {/* Experience */}
       {experience.length > 0 && (
         <section className="mb-5">
-          <p className="text-slate-500 font-bold mb-2">// Experience</p>
+          <p className="text-slate-500 font-bold mb-2">{"// Experience"}</p>
           <div className="space-y-3">
             {experience.map((exp) => (
               <div key={exp.id} className="space-y-0.5">
@@ -60,7 +59,7 @@ export function TechMinimal({ data, className = "" }: TemplateProps) {
       {/* Projects */}
       {projects.length > 0 && (
         <section className="mb-5">
-          <p className="text-slate-500 font-bold mb-2">// Projects</p>
+          <p className="text-slate-500 font-bold mb-2">{"// Projects"}</p>
           <div className="space-y-2">
             {projects.map((proj) => (
               <div key={proj.id} className="space-y-0.5">
@@ -75,7 +74,7 @@ export function TechMinimal({ data, className = "" }: TemplateProps) {
       {/* Education */}
       {education.length > 0 && (
         <section>
-          <p className="text-slate-500 font-bold mb-1">// Education</p>
+          <p className="text-slate-500 font-bold mb-1">{"// Education"}</p>
           {education.map((edu) => (
             <p key={edu.id} className="text-slate-800">{edu.degree} in {edu.fieldOfStudy} @ {edu.institution} ({edu.startDate} - {edu.endDate || "present"})</p>
           ))}
